@@ -41,14 +41,6 @@ typedef struct ecs_table__t {
     
     struct ecs_table_record_t *records; /* Array with table records */
     ecs_hashmap_t *name_index;       /* Cached pointer to name index */
-
-    ecs_switch_t *sw_columns;        /* Switch columns */
-    ecs_bitset_t *bs_columns;        /* Bitset columns */
-    int16_t sw_count;
-    int16_t sw_offset;
-    int16_t bs_count;
-    int16_t bs_offset;
-    int16_t ft_offset;
 } ecs_table__t;
 
 /** Table column */
@@ -64,6 +56,15 @@ struct ecs_data_t {
     ecs_vec_t entities;              /* Entity ids */
     ecs_vec_t records;               /* Ptrs to records in entity index */
     ecs_column_t *columns;           /* Component data */
+    int32_t *dirty_state;            /* Keep track of changes in columns */
+
+    ecs_switch_t *sw_columns;        /* Switch columns */
+    ecs_bitset_t *bs_columns;        /* Bitset columns */
+    int16_t sw_count;
+    int16_t sw_offset;
+    int16_t bs_count;
+    int16_t bs_offset;
+    int16_t ft_offset;
 };
 
 /** A table is the Flecs equivalent of an archetype. Tables store all entities
@@ -79,7 +80,6 @@ struct ecs_table_t {
     ecs_data_t data;                 /* Component storage */
     ecs_graph_node_t node;           /* Graph node */
     
-    int32_t *dirty_state;            /* Keep track of changes in columns */
     int32_t *column_map;             /* Map type index <-> column
                                       *  - 0..count(T):        type index -> column
                                       *  - count(T)..count(C): column -> type index

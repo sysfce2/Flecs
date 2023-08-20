@@ -2376,7 +2376,7 @@ void flecs_query_mark_columns_dirty(
 {
     ecs_table_t *table = qm->table;
     ecs_filter_t *filter = &query->filter;
-    if ((table && table->dirty_state) || (query->flags & EcsQueryHasNonThisOutTerms)) {
+    if ((table && table->data.dirty_state) || (query->flags & EcsQueryHasNonThisOutTerms)) {
         ecs_term_t *terms = filter->terms;
         int32_t i, count = filter->term_count;
 
@@ -2396,7 +2396,7 @@ void flecs_query_mark_columns_dirty(
             }
 
             ecs_assert(tc.table != NULL, ECS_INTERNAL_ERROR, NULL);
-            int32_t *dirty_state = tc.table->dirty_state;
+            int32_t *dirty_state = tc.table->data.dirty_state;
             if (!dirty_state) {
                 continue;
             }

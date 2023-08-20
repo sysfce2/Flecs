@@ -398,13 +398,13 @@ void flecs_instantiate_children(
 
         /* If children have union relationships, initialize */
         if (has_union) {
-            ecs_table__t *meta = child_table->_;
-            ecs_assert(meta != NULL, ECS_INTERNAL_ERROR, NULL);
+            ecs_data_t *data = &child_table->data;
+            ecs_assert(data != NULL, ECS_INTERNAL_ERROR, NULL);
             ecs_assert(i_table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-            int32_t u, u_count = meta->sw_count;
+            int32_t u, u_count = data->sw_count;
             for (u = 0; u < u_count; u ++) {
-                ecs_switch_t *src_sw = &meta->sw_columns[i];
-                ecs_switch_t *dst_sw = &i_table->_->sw_columns[i];
+                ecs_switch_t *src_sw = &data->sw_columns[i];
+                ecs_switch_t *dst_sw = &i_table->data.sw_columns[i];
                 ecs_vec_t *v_src_values = flecs_switch_values(src_sw);
                 ecs_vec_t *v_dst_values = flecs_switch_values(dst_sw);
                 uint64_t *src_values = ecs_vec_first(v_src_values);
@@ -484,8 +484,8 @@ void flecs_set_union(
             ecs_table_record_t *tr = flecs_id_record_get_table(idr, table);
             ecs_assert(tr != NULL, ECS_INTERNAL_ERROR, NULL);
             ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-            int32_t column = tr->index - table->_->sw_offset;
-            ecs_switch_t *sw = &table->_->sw_columns[column];
+            int32_t column = tr->index - table->data.sw_offset;
+            ecs_switch_t *sw = &table->data.sw_columns[column];
             ecs_entity_t union_case = 0;
             union_case = ecs_pair_second(world, id);
 
@@ -3227,11 +3227,11 @@ void ecs_enable_id(
     }
     
     ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-    index -= table->_->bs_offset;
+    index -= table->data.bs_offset;
     ecs_assert(index >= 0, ECS_INTERNAL_ERROR, NULL);
 
     /* Data cannot be NULl, since entity is stored in the table */
-    ecs_bitset_t *bs = &table->_->bs_columns[index];
+    ecs_bitset_t *bs = &table->data.bs_columns[index];
     ecs_assert(bs != NULL, ECS_INTERNAL_ERROR, NULL);
 
     flecs_bitset_set(bs, ECS_RECORD_TO_ROW(r->row), enable);
@@ -3267,9 +3267,9 @@ bool ecs_is_enabled_id(
     }
 
     ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-    index -= table->_->bs_offset;
+    index -= table->data.bs_offset;
     ecs_assert(index >= 0, ECS_INTERNAL_ERROR, NULL);
-    ecs_bitset_t *bs = &table->_->bs_columns[index];
+    ecs_bitset_t *bs = &table->data.bs_columns[index];
 
     return flecs_bitset_get(bs, ECS_RECORD_TO_ROW(r->row));
 error:
@@ -3321,8 +3321,8 @@ bool ecs_has_id(
     {
         if (ECS_PAIR_FIRST(table->type.array[column]) == EcsUnion) {
             ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-            ecs_switch_t *sw = &table->_->sw_columns[
-                column - table->_->sw_offset];
+            ecs_switch_t *sw = &table->data.sw_columns[
+                column - table->data.sw_offset];
             int32_t row = ECS_RECORD_TO_ROW(r->row);
             uint64_t value = flecs_switch_get(sw, row);
             return value == ecs_pair_second(world, id);
@@ -3373,8 +3373,8 @@ ecs_entity_t ecs_get_target(
             tr = flecs_table_record_get(world, table, wc);
             if (tr) {
                 ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-                ecs_switch_t *sw = &table->_->sw_columns[
-                    tr->index - table->_->sw_offset];
+                ecs_switch_t *sw = &table->data.sw_columns[
+                    tr->index - table->data.sw_offset];
                 int32_t row = ECS_RECORD_TO_ROW(r->row);
                 return flecs_switch_get(sw, row);
                 

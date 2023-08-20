@@ -2001,7 +2001,7 @@ bool flecs_term_match_table(
 
     if ((column == -1) && (src->flags & EcsUp) && (table->flags & EcsTableHasTarget)) {
         ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-        ecs_id_t rel = ECS_PAIR_SECOND(table->type.array[table->_->ft_offset]);
+        ecs_id_t rel = ECS_PAIR_SECOND(table->type.array[table->data.ft_offset]);
         if (rel == (uint32_t)src->trav) {
             result = true;
         }

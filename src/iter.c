@@ -237,7 +237,7 @@ has_union: {
         /* Edge case: if column is a switch we should return the vector with case
          * identifiers. Will be replaced in the future with pluggable storage */
         ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-        ecs_switch_t *sw = &table->_->sw_columns[u_index];
+        ecs_switch_t *sw = &table->data.sw_columns[u_index];
         data = ecs_vec_first(flecs_switch_values(sw));
         goto has_data;
     }
