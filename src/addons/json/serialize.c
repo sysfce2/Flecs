@@ -647,17 +647,6 @@ int flecs_json_append_type_labels(
             continue;
         }
 
-        if (obj && (pred == EcsUnion)) {
-            pred = obj;
-            obj = ecs_get_target(world, ent, pred, 0);
-            if (!ecs_is_alive(world, obj)) {
-                /* Union relationships aren't automatically cleaned up, so they
-                 * can contain invalid entity ids. Don't serialize value until
-                 * relationship is valid again. */
-                continue;
-            }
-        }
-
         if (desc && desc->serialize_id_labels) {
             flecs_json_next(buf);
 
@@ -861,36 +850,31 @@ int flecs_json_append_type(
                 continue;
             }
 
-            if (obj && (pred == EcsUnion)) {
-                pred = obj;
-                obj = ecs_get_target(world, ent, pred, 0);
-                if (!ecs_is_alive(world, obj)) {
-                    /* Union relationships aren't automatically cleaned up, so they
-                    * can contain invalid entity ids. Don't serialize value until
-                    * relationship is valid again. */
-                    continue;
-                }
-            }
-
             flecs_json_next(buf);
             flecs_json_array_push(buf);
             flecs_json_next(buf);
             flecs_json_path(buf, world, pred);
             if (obj || role) {
                 flecs_json_next(buf);
-                if (obj) {
-                    flecs_json_path(buf, world, obj);
-                } else {
-                    flecs_json_number(buf, 0);
-                }
-                if (role) {
+                flecs_json_array_push(buf);
+                flecs_json_next(buf);
+                flecs_json_path(buf, world, pred);
+                if (obj || role) {
                     flecs_json_next(buf);
-                    flecs_json_string(buf, ecs_id_flag_str(role));
+                    if (obj) {
+                        flecs_json_path(buf, world, obj);
+                    } else {
+                        flecs_json_number(buf, 0);
+                    }
+                    if (role) {
+                        flecs_json_next(buf);
+                        flecs_json_string(buf, ecs_id_flag_str(role));
+                    }
                 }
+                flecs_json_array_pop(buf);
             }
             flecs_json_array_pop(buf);
         }
-        flecs_json_array_pop(buf);
     }
 
     if (flecs_json_append_type_labels(world, buf, ids, count, ent, inst, desc)) {

@@ -58,10 +58,7 @@ struct ecs_data_t {
     ecs_column_t *columns;           /* Component data */
     int32_t *dirty_state;            /* Keep track of changes in columns */
 
-    ecs_switch_t *sw_columns;        /* Switch columns */
     ecs_bitset_t *bs_columns;        /* Bitset columns */
-    int16_t sw_count;
-    int16_t sw_offset;
     int16_t bs_count;
     int16_t bs_offset;
     int16_t ft_offset;
@@ -248,10 +245,6 @@ void flecs_table_notify(
 void flecs_table_delete_entities(
     ecs_world_t *world,
     ecs_table_t *table);
-
-int32_t flecs_table_column_to_union_index(
-    const ecs_table_t *table,
-    int32_t column);
 
 /* Increase observer count of table */
 void flecs_table_traversable_add(

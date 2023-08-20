@@ -23,11 +23,7 @@ int32_t flecs_type_search(
         int32_t r = tr->index;
         if (tr_out) tr_out[0] = tr;
         if (id_out) {
-            if (ECS_PAIR_FIRST(search_id) == EcsUnion) {
-                id_out[0] = ids[r];
-            } else {
-                id_out[0] = flecs_to_public_id(ids[r]);
-            }
+            id_out[0] = ids[r];
         }
         return r;
     }
@@ -52,7 +48,7 @@ int32_t flecs_type_offset_search(
         ecs_id_t type_id = ids[offset ++];
         if (ecs_id_match(type_id, id)) {
             if (id_out) {
-                id_out[0] = flecs_to_public_id(type_id);
+                id_out[0] = type_id;
             }
             return offset - 1;
         }
@@ -206,7 +202,7 @@ int32_t flecs_search_relation_w_idr(
     flags = flags ? flags : (EcsSelf|EcsUp);
 
     if (!idr) {
-        idr = flecs_query_id_record_get(world, id);
+        idr = flecs_id_record_get(world, id);
         if (!idr) {
             return -1;
         }
@@ -252,7 +248,7 @@ int32_t ecs_search_relation(
         return ecs_search_offset(world, table, offset, id, id_out);
     }
 
-    ecs_id_record_t *idr = flecs_query_id_record_get(world, id);
+    ecs_id_record_t *idr = flecs_id_record_get(world, id);
     if (!idr) {
         return -1;
     }
@@ -293,7 +289,7 @@ int32_t ecs_search(
     ecs_poly_assert(world, ecs_world_t);
     ecs_assert(id != 0, ECS_INVALID_PARAMETER, NULL);
 
-    ecs_id_record_t *idr = flecs_query_id_record_get(world, id);
+    ecs_id_record_t *idr = flecs_id_record_get(world, id);
     if (!idr) {
         return -1;
     }

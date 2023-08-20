@@ -111,7 +111,6 @@ static const flecs::entity_t Reflexive = EcsReflexive;
 static const flecs::entity_t Final = EcsFinal;
 static const flecs::entity_t DontInherit = EcsDontInherit;
 static const flecs::entity_t Tag = EcsTag;
-static const flecs::entity_t Union = EcsUnion;
 static const flecs::entity_t Exclusive = EcsExclusive;
 static const flecs::entity_t Acyclic = EcsAcyclic;
 static const flecs::entity_t Traversable = EcsTraversable;

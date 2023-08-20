@@ -47,7 +47,6 @@ const ecs_entity_t EcsFinal =                       FLECS_HI_COMPONENT_ID + 17;
 const ecs_entity_t EcsDontInherit =                 FLECS_HI_COMPONENT_ID + 18;
 const ecs_entity_t EcsAlwaysOverride =              FLECS_HI_COMPONENT_ID + 19;
 const ecs_entity_t EcsTag =                         FLECS_HI_COMPONENT_ID + 20;
-const ecs_entity_t EcsUnion =                       FLECS_HI_COMPONENT_ID + 21;
 const ecs_entity_t EcsExclusive =                   FLECS_HI_COMPONENT_ID + 22;
 const ecs_entity_t EcsAcyclic =                     FLECS_HI_COMPONENT_ID + 23;
 const ecs_entity_t EcsTraversable =                 FLECS_HI_COMPONENT_ID + 24;

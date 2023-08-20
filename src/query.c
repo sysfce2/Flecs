@@ -913,9 +913,6 @@ void flecs_query_set_table_match(
         if (qm->entity_filter) {
             query->flags &= ~EcsQueryTrivialIter;
         }
-        if (table->flags & EcsTableHasUnion) {
-            query->flags &= ~EcsQueryTrivialIter;
-        }
     }
 
     /* Add references for substituted terms */

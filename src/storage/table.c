@@ -196,16 +196,7 @@ void flecs_table_init_data(
     flecs_table_init_columns(world, table, table->column_count);
 
     ecs_data_t *data = &table->data;
-    int32_t i, sw_count = data->sw_count;
-    int32_t bs_count = data->bs_count;
-
-    if (sw_count) {
-        data->sw_columns = flecs_wcalloc_n(world, ecs_switch_t, sw_count);
-        for (i = 0; i < sw_count; i ++) {
-            flecs_switch_init(&data->sw_columns[i], 
-                &world->allocator, 0);
-        }
-    }
+    int32_t i, bs_count = data->bs_count;
 
     if (bs_count) {
         data->bs_columns = flecs_wcalloc_n(world, ecs_bitset_t, bs_count);
@@ -264,14 +255,6 @@ void flecs_table_init_flags(
                     }
                 } else if (id == ecs_pair_t(EcsIdentifier, EcsName)) {
                     table->flags |= EcsTableHasName;
-                } else if (r == EcsUnion) {
-                    ecs_data_t *data = &table->data;
-                    table->flags |= EcsTableHasUnion;
-
-                    if (!data->sw_count) {
-                        data->sw_offset = flecs_ito(int16_t, i);
-                    }
-                    data->sw_count ++;
                 } else if (r == ecs_id(EcsTarget)) {
                     ecs_data_t *data = &table->data;
                     table->flags |= EcsTableHasTarget;
@@ -919,16 +902,6 @@ void flecs_table_fini_data(
         data->columns = NULL;
     }
 
-    ecs_switch_t *sw_columns = data->sw_columns;
-    if (sw_columns) {
-        int32_t c, column_count = data->sw_count;
-        for (c = 0; c < column_count; c ++) {
-            flecs_switch_fini(&sw_columns[c]);
-        }
-        flecs_wfree_n(world, ecs_switch_t, column_count, sw_columns);
-        data->sw_columns = NULL;
-    }
-
     ecs_bitset_t *bs_columns = data->bs_columns;
     if (bs_columns) {
         int32_t c, column_count = data->bs_count;
@@ -1162,81 +1135,6 @@ int32_t* flecs_table_get_dirty_state(
     return table->data.dirty_state;
 }
 
-/* Table move logic for switch (union relationship) column */
-static
-void flecs_table_move_switch_columns(
-    ecs_table_t *dst_table, 
-    int32_t dst_index,
-    ecs_table_t *src_table, 
-    int32_t src_index,
-    int32_t count,
-    bool clear)
-{
-    ecs_data_t *dst_data = &dst_table->data;
-    ecs_data_t *src_data = &src_table->data;
-    if (!dst_data && !src_data) {
-        return;
-    }
-
-    int32_t i_old = 0, src_column_count = src_data ? src_data->sw_count : 0;
-    int32_t i_new = 0, dst_column_count = dst_data ? dst_data->sw_count : 0;
-    if (!src_column_count && !dst_column_count) {
-        return;
-    }
-
-    ecs_switch_t *src_columns = src_data ? src_data->sw_columns : NULL;
-    ecs_switch_t *dst_columns = dst_data ? dst_data->sw_columns : NULL;
-
-    ecs_type_t dst_type = dst_table->type;
-    ecs_type_t src_type = src_table->type;
-
-    int32_t offset_new = dst_data ? dst_data->sw_offset : 0;
-    int32_t offset_old = src_data ? src_data->sw_offset : 0;
-
-    ecs_id_t *dst_ids = dst_type.array;
-    ecs_id_t *src_ids = src_type.array;
-
-    for (; (i_new < dst_column_count) && (i_old < src_column_count);) {
-        ecs_entity_t dst_id = dst_ids[i_new + offset_new];
-        ecs_entity_t src_id = src_ids[i_old + offset_old];
-
-        if (dst_id == src_id) {
-            ecs_switch_t *src_switch = &src_columns[i_old];
-            ecs_switch_t *dst_switch = &dst_columns[i_new];
-
-            flecs_switch_ensure(dst_switch, dst_index + count);
-
-            int i;
-            for (i = 0; i < count; i ++) {
-                uint64_t value = flecs_switch_get(src_switch, src_index + i);
-                flecs_switch_set(dst_switch, dst_index + i, value);
-            }
-
-            if (clear) {
-                ecs_assert(count == flecs_switch_count(src_switch), 
-                    ECS_INTERNAL_ERROR, NULL);
-                flecs_switch_clear(src_switch);
-            }
-        } else if (dst_id > src_id) {
-            ecs_switch_t *src_switch = &src_columns[i_old];
-            flecs_switch_clear(src_switch);
-        }
-
-        i_new += dst_id <= src_id;
-        i_old += dst_id >= src_id;
-    }
-
-    /* Clear remaining columns */
-    if (clear) {
-        for (; (i_old < src_column_count); i_old ++) {
-            ecs_switch_t *src_switch = &src_columns[i_old];
-            ecs_assert(count == flecs_switch_count(src_switch), 
-                ECS_INTERNAL_ERROR, NULL);
-            flecs_switch_clear(src_switch);
-        }
-    }
-}
-
 /* Table move logic for bitset (toggle component) column */
 static
 void flecs_table_move_bitset_columns(
@@ -1433,16 +1331,8 @@ int32_t flecs_table_grow_data(
             cur_count, to_add, false);
     }
 
-    int32_t sw_count = data->sw_count;
     int32_t bs_count = data->bs_count;
-    ecs_switch_t *sw_columns = data->sw_columns;
     ecs_bitset_t *bs_columns = data->bs_columns; 
-
-    /* Add elements to each switch column */
-    for (i = 0; i < sw_count; i ++) {
-        ecs_switch_t *sw = &sw_columns[i];
-        flecs_switch_addn(sw, to_add);
-    }
 
     /* Add elements to each bitset column */
     for (i = 0; i < bs_count; i ++) {
@@ -1549,17 +1439,8 @@ int32_t flecs_table_append(
             data->entities.count, ECS_INTERNAL_ERROR, NULL);
     }
 
-    int32_t sw_count = data->sw_count;
     int32_t bs_count = data->bs_count;
-    ecs_switch_t *sw_columns = data->sw_columns;
     ecs_bitset_t *bs_columns = data->bs_columns;
-
-    /* Add element to each switch column */
-    for (i = 0; i < sw_count; i ++) {
-        ecs_assert(sw_columns != NULL, ECS_INTERNAL_ERROR, NULL);
-        ecs_switch_t *sw = &sw_columns[i];
-        flecs_switch_add(sw);
-    }
 
     /* Add element to each bitset column */
     for (i = 0; i < bs_count; i ++) {
@@ -1721,13 +1602,6 @@ void flecs_table_delete(
         }
     }
 
-    /* Remove elements from switch columns */
-    ecs_switch_t *sw_columns = data->sw_columns;
-    int32_t sw_count = data->sw_count;
-    for (i = 0; i < sw_count; i ++) {
-        flecs_switch_remove(&sw_columns[i], index);
-    }
-
     /* Remove elements from bitset columns */
     ecs_bitset_t *bs_columns = data->bs_columns;
     int32_t bs_count = data->bs_count;
@@ -1799,7 +1673,6 @@ void flecs_table_move(
         return;
     }
 
-    flecs_table_move_switch_columns(dst_table, dst_index, src_table, src_index, 1, false);
     flecs_table_move_bitset_columns(dst_table, dst_index, src_table, src_index, 1, false);
 
     /* If the source and destination entities are the same, move component 
@@ -1954,26 +1827,6 @@ int32_t flecs_table_data_count(
     return data ? data->entities.count : 0;
 }
 
-/* Swap operation for switch (union relationship) columns */
-static
-void flecs_table_swap_switch_columns(
-    ecs_table_t *table,
-    int32_t row_1,
-    int32_t row_2)
-{
-    int32_t i = 0, column_count = table->data.sw_count;
-    if (!column_count) {
-        return;
-    }
-
-    ecs_switch_t *columns = table->data.sw_columns;
-
-    for (i = 0; i < column_count; i ++) {
-        ecs_switch_t *sw = &columns[i];
-        flecs_switch_swap(sw, row_1, row_2);
-    }
-}
-
 /* Swap operation for bitset (toggle component) columns */
 static
 void flecs_table_swap_bitset_columns(
@@ -2039,7 +1892,6 @@ void flecs_table_swap(
     records[row_1] = record_ptr_2;
     records[row_2] = record_ptr_1;
 
-    flecs_table_swap_switch_columns(table, row_1, row_2);
     flecs_table_swap_bitset_columns(table, row_1, row_2);
 
     ecs_column_t *columns = table->data.columns;
@@ -2208,7 +2060,6 @@ void flecs_table_merge_data(
         }
     }
 
-    flecs_table_move_switch_columns(dst_table, dst_count, src_table, 0, src_count, true);
     flecs_table_move_bitset_columns(dst_table, dst_count, src_table, 0, src_count, true);
 
     /* Initialize remaining columns */
@@ -2574,20 +2425,6 @@ bool ecs_table_has_flags(
     ecs_flags32_t flags)
 {
     return (table->flags & flags) == flags;
-}
-
-int32_t flecs_table_column_to_union_index(
-    const ecs_table_t *table,
-    int32_t column)
-{
-    int32_t sw_count = table->data.sw_count;
-    if (sw_count) {
-        int32_t sw_offset = table->data.sw_offset;
-        if (column >= sw_offset && column < (sw_offset + sw_count)){
-            return column - sw_offset;
-        }
-    }
-    return -1;
 }
 
 void ecs_table_swap_rows(

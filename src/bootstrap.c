@@ -172,9 +172,7 @@ void flecs_assert_relation_unused(
     }
 
     bool in_use = ecs_id_in_use(world, ecs_pair(rel, EcsWildcard));
-    if (property != EcsUnion) {
-        in_use |= ecs_id_in_use(world, rel);
-    }
+    in_use |= ecs_id_in_use(world, rel);
     if (in_use) {
         char *r_str = ecs_get_fullpath(world, rel);
         char *p_str = ecs_get_fullpath(world, property);
@@ -344,19 +342,6 @@ void flecs_register_always_override(ecs_iter_t *it) {
 static
 void flecs_register_with(ecs_iter_t *it) {
     flecs_register_id_flag_for_relation(it, EcsWith, EcsIdWith, 0, 0);
-}
-
-static
-void flecs_register_union(ecs_iter_t *it) {
-    flecs_register_id_flag_for_relation(it, EcsUnion, EcsIdUnion, 0, 0);
-}
-
-static
-void flecs_register_slot_of(ecs_iter_t *it) {
-    int i, count = it->count;
-    for (i = 0; i < count; i ++) {
-        ecs_add_id(it->world, it->entities[i], EcsUnion);
-    }
 }
 
 static
@@ -736,7 +721,6 @@ void flecs_bootstrap(
     flecs_bootstrap_tag(world, EcsDontInherit);
     flecs_bootstrap_tag(world, EcsAlwaysOverride);
     flecs_bootstrap_tag(world, EcsTag);
-    flecs_bootstrap_tag(world, EcsUnion);
     flecs_bootstrap_tag(world, EcsExclusive);
     flecs_bootstrap_tag(world, EcsAcyclic);
     flecs_bootstrap_tag(world, EcsTraversable);
@@ -782,7 +766,6 @@ void flecs_bootstrap(
     ecs_add_id(world, EcsDependsOn, EcsTag);
     ecs_add_id(world, EcsFlatten, EcsTag);
     ecs_add_id(world, EcsDefaultChildComponent, EcsTag);
-    ecs_add_id(world, EcsUnion, EcsTag);
     ecs_add_id(world, EcsFlag, EcsTag);
     ecs_add_id(world, EcsWith, EcsTag);
 
@@ -876,23 +859,6 @@ void flecs_bootstrap(
         },
         .events = {EcsOnAdd},
         .callback = flecs_register_with
-    });
-
-    ecs_observer(world, {
-        .filter.terms = {{ .id = EcsUnion, .src.flags = EcsSelf }, match_prefab },
-        .events = {EcsOnAdd},
-        .callback = flecs_register_union
-    });
-
-    /* Entities used as slot are marked as exclusive to ensure a slot can always
-     * only point to a single entity. */
-    ecs_observer(world, {
-        .filter.terms = {
-            { .id = ecs_pair(EcsSlotOf, EcsWildcard), .src.flags = EcsSelf },
-            match_prefab
-        },
-        .events = {EcsOnAdd},
-        .callback = flecs_register_slot_of
     });
 
     /* Define observer to make sure that adding a module to a child entity also
