@@ -998,7 +998,7 @@ int flecs_json_serialize_children_alerts(
 
     ecs_iter_t it = ecs_filter_iter(world, &f);
     while (ecs_filter_next(&it)) {
-        ecs_record_t **records = ecs_vec_first(&it.table->data.records);
+        ecs_record_t **records = flecs_table_records_array(it.table);
         EcsAlertsActive *alerts = ecs_table_get_id(
             world, it.table, ecs_id(EcsAlertsActive), it.offset);
 
@@ -1078,7 +1078,7 @@ int flecs_json_serialize_refs_idr(
         while ((tr = flecs_table_cache_next(&it, ecs_table_record_t))) {
             ecs_table_t *table = tr->hdr.table;
             int32_t i, count = ecs_table_count(table);
-            ecs_entity_t *entities = ecs_vec_first(&table->data.entities);
+            ecs_entity_t *entities = flecs_table_entities_array(table);
             for (i = 0; i < count; i ++) {
                 ecs_entity_t e = entities[i];
                 flecs_json_next(buf);
@@ -1134,7 +1134,7 @@ int flecs_json_serialize_matches(
                 EcsPoly *queries = ecs_table_get_column(table, tr->column, 0);
 
                 int32_t i, count = ecs_table_count(table);
-                ecs_entity_t *entities = ecs_vec_first(&table->data.entities);
+                ecs_entity_t *entities = flecs_table_entities_array(table);
                 for (i = 0; i < count; i ++) {
                     ecs_poly_t *q = queries[i].poly;
                     ecs_iter_t qit;
@@ -1946,7 +1946,7 @@ int flecs_json_serialize_iter_result_columns(
             continue;
         }
 
-        ecs_entity_t typeid = table->data.columns[storage_column].ti->component;
+        ecs_entity_t typeid = flecs_table_column(table, storage_column)->ti->component;
         if (!typeid) {
             ecs_strbuf_appendch(buf, '0');
             continue;
@@ -1965,7 +1965,7 @@ int flecs_json_serialize_iter_result_columns(
             continue;
         }
 
-        void *ptr = ecs_vec_first(&table->data.columns[storage_column].data);
+        void *ptr = ecs_vec_first(&flecs_table_column(table, storage_column)->data);
         if (array_to_json_buf_w_type_data(world, ptr, it->count, buf, comp, ser)) {
             return -1;
         }

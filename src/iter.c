@@ -194,7 +194,7 @@ bool flecs_iter_populate_term_data(
             /* We now have row and column, so we can get the storage for the id
              * which gives us the pointer and size */
             column = tr->column;
-            ecs_vec_t *s = &table->data.columns[column].data;
+            ecs_vec_t *s = &flecs_table_column(table, column)->data;
             data = ecs_vec_first(s);
             /* Fallthrough to has_data */
         }
@@ -215,7 +215,7 @@ bool flecs_iter_populate_term_data(
             goto no_data;
         }
 
-        ecs_vec_t *s = &table->data.columns[storage_column].data;
+        ecs_vec_t *s = &flecs_table_column(table, storage_column)->data;
         data = ecs_vec_first(s);
 
         /* Fallthrough to has_data */
@@ -249,8 +249,7 @@ void flecs_iter_populate_data(
         ecs_assert(count != 0 || !ecs_table_count(table) || (it->flags & EcsIterTableOnly), 
             ECS_INTERNAL_ERROR, NULL);
         if (count) {
-            it->entities = ecs_vec_get_t(
-                &table->data.entities, ecs_entity_t, offset);
+            it->entities = &flecs_table_entities_array(table)[offset];
         } else {
             it->entities = NULL;
         }
@@ -624,8 +623,7 @@ ecs_entity_t ecs_iter_get_var(
             if ((var->range.count == 1) || (ecs_table_count(table) == 1)) {
                 ecs_assert(ecs_table_count(table) > var->range.offset,
                     ECS_INTERNAL_ERROR, NULL);
-                e = ecs_vec_get_t(&table->data.entities, ecs_entity_t,
-                    var->range.offset)[0];
+                e = flecs_table_entities_array(table)[var->range.offset];
             }
         }
     } else {
@@ -786,8 +784,7 @@ void ecs_iter_set_var_as_range(
 
     if (range->count == 1) {
         ecs_table_t *table = range->table;
-        var->entity = ecs_vec_get_t(
-            &table->data.entities, ecs_entity_t, range->offset)[0];
+        var->entity = flecs_table_entities_array(table)[range->offset];
     } else {
         var->entity = 0;
     }

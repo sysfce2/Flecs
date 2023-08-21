@@ -854,15 +854,15 @@ void flecs_rest_reply_table_append_memory(
     ecs_strbuf_t *reply,
     const ecs_table_t *table)
 {
-    int32_t used = 0, allocated = 0;
+    int32_t used = 0, allocated = 0, count = ecs_table_count(table);
 
-    used += table->data.entities.count * ECS_SIZEOF(ecs_entity_t);
-    used += table->data.records.count * ECS_SIZEOF(ecs_record_t*);
-    allocated += table->data.entities.size * ECS_SIZEOF(ecs_entity_t);
-    allocated += table->data.records.size * ECS_SIZEOF(ecs_record_t*);
+    used += count * ECS_SIZEOF(ecs_entity_t);
+    used += count * ECS_SIZEOF(ecs_record_t*);
+    allocated += flecs_table_entities(table)->size * ECS_SIZEOF(ecs_entity_t);
+    allocated += flecs_table_records(table)->size * ECS_SIZEOF(ecs_record_t*);
 
     int32_t i, storage_count = table->column_count;
-    ecs_column_t *columns = table->data.columns;
+    ecs_column_t *columns = flecs_table_columns(table);
 
     for (i = 0; i < storage_count; i ++) {
         used += columns[i].data.count * columns[i].ti->size;

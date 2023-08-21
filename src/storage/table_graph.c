@@ -521,7 +521,6 @@ void flecs_init_table(
     ecs_table_t *prev)
 {
     table->flags = 0;
-    table->data.dirty_state = NULL;
     table->_->lock = 0;
     table->_->generation = 0;
 

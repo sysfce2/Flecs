@@ -683,7 +683,7 @@ const char* flecs_json_parse_column(
     }
 
     ecs_json_token_t token_kind = 0;
-    ecs_column_t *column = &table->data.columns[data_column];
+    ecs_column_t *column = flecs_table_column(table, data_column);
     ecs_type_info_t *ti = column->ti;
     ecs_size_t size = ti->size;
     ecs_entity_t type = ti->component;
@@ -693,8 +693,7 @@ const char* flecs_json_parse_column(
     do {
         ecs_record_t *r = record_array[entity];
         int32_t row = ECS_RECORD_TO_ROW(r->row);
-        ecs_assert(ecs_vec_get_t(
-            &table->data.records, ecs_record_t*, row)[0] == r,
+        ecs_assert(flecs_table_records_array(table)[row] == r,
                 ECS_INTERNAL_ERROR, NULL);
 
         void *ptr = ecs_vec_get(&column->data, size, row);

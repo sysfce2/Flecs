@@ -66,7 +66,7 @@ int flecs_entity_filter_bitset_next(
 
     int32_t i, count = ecs_vec_count(&iter->entity_filter->bs_terms);
     flecs_bitset_term_t *terms = ecs_vec_first(&iter->entity_filter->bs_terms);
-    int32_t bs_offset = table->data.bs_offset;
+    int32_t bs_offset = flecs_table_data(table)->bs_offset;
     int32_t first = iter->bs_offset;
     int32_t last = 0;
 
@@ -77,7 +77,7 @@ int flecs_entity_filter_bitset_next(
         if (!bs) {
             int32_t index = column->column_index;
             ecs_assert((index - bs_offset >= 0), ECS_INTERNAL_ERROR, NULL);
-            bs = &table->data.bs_columns[index - bs_offset];
+            bs = &flecs_table_data(table)->bs_columns[index - bs_offset];
             terms[i].bs_column = bs;
         }
         
@@ -228,9 +228,9 @@ int32_t flecs_get_flattened_target(
     }
 
     if (table->flags & EcsTableHasTarget) {
-        int32_t col = table->column_map[table->data.ft_offset];
+        int32_t col = table->column_map[flecs_table_data(table)->ft_offset];
         ecs_assert(col != -1, ECS_INTERNAL_ERROR, NULL);
-        EcsTarget *next = table->data.columns[col].data.array;
+        EcsTarget *next = flecs_table_column(table, col)->data.array;
         next = ECS_ELEM_T(next, EcsTarget, ECS_RECORD_TO_ROW(r->row));
         return flecs_get_flattened_target(
             world, next, rel, id, src_out, tr_out);
@@ -381,7 +381,7 @@ int flecs_entity_filter_next(
             bool first_for_table = it->prev != table;
             ecs_iter_t *iter = it->it;
             ecs_world_t *world = iter->real_world;
-            EcsTarget *ft = table->data.columns[flat_tree_column].data.array;
+            EcsTarget *ft = flecs_table_column(table, flat_tree_column)->data.array;
             int32_t ft_offset;
             int32_t ft_count;
 

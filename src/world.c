@@ -614,8 +614,8 @@ void flecs_fini_roots(ecs_world_t *world) {
             continue; /* Filter out modules */
         }
 
-        int32_t i, count = table->data.entities.count;
-        ecs_entity_t *entities = table->data.entities.array;
+        int32_t i, count = ecs_table_count(table);
+        ecs_entity_t *entities = flecs_table_entities_array(table);
 
         /* Count backwards so that we're always deleting the last entity in the
          * table which reduces moving components around */
@@ -1583,7 +1583,7 @@ void ecs_set_entity_generation(
     ecs_record_t *r = flecs_entities_get(world, entity_with_generation);
     if (r && r->table) {
         int32_t row = ECS_RECORD_TO_ROW(r->row);
-        ecs_entity_t *entities = r->table->data.entities.array;
+        ecs_entity_t *entities = flecs_table_entities_array(r->table);
         entities[row] = entity_with_generation;
     }
 }
@@ -1914,7 +1914,7 @@ void flecs_process_empty_queries(
 
             for (i = 0; i < count; i ++) {
                 ecs_query_t *query = queries[i].poly;
-                ecs_entity_t *entities = table->data.entities.array;
+                ecs_entity_t *entities = flecs_table_entities_array(table);
                 if (!ecs_query_table_count(query)) {
                     ecs_add_id(world, entities[i], EcsEmpty);
                 }

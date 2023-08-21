@@ -74,7 +74,7 @@ struct ecs_table_t {
     int16_t column_count;            /* Number of components (excluding tags) */
     ecs_type_t type;                 /* Vector with component ids */
 
-    ecs_data_t data;                 /* Component storage */
+    ecs_data_t *data;                /* Component storage */
     ecs_graph_node_t node;           /* Graph node */
     
     int32_t *column_map;             /* Map type index <-> column
@@ -90,6 +90,35 @@ void flecs_table_init(
     ecs_world_t *world,
     ecs_table_t *table,
     ecs_table_t *from);
+
+/* Get table data */
+ecs_data_t* flecs_table_data(
+    const ecs_table_t *table);
+
+/* Get table columns */
+ecs_column_t* flecs_table_columns(
+    const ecs_table_t *table);
+
+/* Get table column */
+ecs_column_t* flecs_table_column(
+    const ecs_table_t *table,
+    int32_t column);
+
+/* Get table entities */
+ecs_vec_t* flecs_table_entities(
+    const ecs_table_t *table);
+
+/* Get table entities */
+ecs_vec_t* flecs_table_records(
+    const ecs_table_t *table);
+
+/* Get table entities array */
+ecs_entity_t* flecs_table_entities_array(
+    const ecs_table_t *table);
+
+/* Get table entities array */
+ecs_record_t** flecs_table_records_array(
+    const ecs_table_t *table);
 
 /** Copy type. */
 ecs_type_t flecs_type_copy(
@@ -121,20 +150,11 @@ void flecs_table_reset(
     ecs_world_t *world,
     ecs_table_t *table);
 
-/* Clear all entities from the table. Do not invoke OnRemove systems */
-void flecs_table_clear_entities_silent(
-    ecs_world_t *world,
-    ecs_table_t *table);
-
 /* Clear table data. Don't call OnRemove handlers. */
 void flecs_table_clear_data(
     ecs_world_t *world,
     ecs_table_t *table,
-    ecs_data_t *data);    
-
-/* Return number of entities in data */
-int32_t flecs_table_data_count(
-    const ecs_data_t *data);
+    ecs_data_t *data);
 
 /* Add a new entry to the table for the specified entity */
 int32_t flecs_table_append(
@@ -211,12 +231,6 @@ void flecs_table_free(
 void flecs_table_free_type(
     ecs_world_t *world,
     ecs_table_t *table);     
-    
-/* Replace data */
-void flecs_table_replace_data(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_data_t *data);
 
 /* Merge data of one table into another table */
 void flecs_table_merge(

@@ -463,7 +463,7 @@ void flecs_bootstrap_builtin(
 {
     ecs_assert(table != NULL, ECS_INTERNAL_ERROR, NULL);
 
-    ecs_column_t *columns = table->data.columns;
+    ecs_column_t *columns = flecs_table_columns(table);
     ecs_assert(columns != NULL, ECS_INTERNAL_ERROR, NULL);
 
     ecs_record_t *record = flecs_entities_ensure(world, entity);
@@ -541,7 +541,7 @@ ecs_table_t* flecs_bootstrap_component_table(
     };
 
     ecs_table_t *result = flecs_table_find_or_create(world, &array);
-    ecs_data_t *data = &result->data;
+    ecs_data_t *data = flecs_table_data(result);
 
     /* Preallocate enough memory for initial components */
     ecs_allocator_t *a = &world->allocator;
