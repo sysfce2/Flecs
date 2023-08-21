@@ -12514,11 +12514,7 @@ static bake_test_suite suites[] = {
         "Query",
         NULL,
         NULL,
-<<<<<<< HEAD
-        235,
-=======
-        217,
->>>>>>> 46cbfae3c (Remove support for Union relationships and snapshots)
+        225,
         Query_testcases
     },
     {

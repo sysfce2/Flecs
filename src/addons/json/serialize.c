@@ -1922,7 +1922,7 @@ int flecs_json_serialize_iter_result_columns(
     ecs_strbuf_t *buf)
 {
     ecs_table_t *table = it->table;
-    if (!table || !table->column_count) {
+    if (!table || !ecs_table_column_count(table)) {
         return 0;
     }
 

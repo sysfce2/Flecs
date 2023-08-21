@@ -861,7 +861,7 @@ void flecs_rest_reply_table_append_memory(
     allocated += flecs_table_entities(table)->size * ECS_SIZEOF(ecs_entity_t);
     allocated += flecs_table_records(table)->size * ECS_SIZEOF(ecs_record_t*);
 
-    int32_t i, storage_count = table->column_count;
+    int32_t i, storage_count = ecs_table_column_count(table);
     ecs_column_t *columns = flecs_table_columns(table);
 
     for (i = 0; i < storage_count; i ++) {

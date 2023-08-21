@@ -56,6 +56,7 @@ struct ecs_data_t {
     ecs_vec_t entities;              /* Entity ids */
     ecs_vec_t records;               /* Ptrs to records in entity index */
     ecs_column_t *columns;           /* Component data */
+    int16_t column_count;            /* Number of components (excluding tags) */
     int32_t *dirty_state;            /* Keep track of changes in columns */
 
     ecs_bitset_t *bs_columns;        /* Bitset columns */
@@ -71,7 +72,6 @@ struct ecs_data_t {
 struct ecs_table_t {
     uint64_t id;                     /* Table id in sparse set */
     ecs_flags32_t flags;             /* Flags for testing table properties */
-    int16_t column_count;            /* Number of components (excluding tags) */
     ecs_type_t type;                 /* Vector with component ids */
 
     ecs_data_t *data;                /* Component storage */
@@ -138,7 +138,8 @@ ecs_table_t* flecs_table_find_or_create(
 /* Initialize columns for data */
 void flecs_table_init_data(
     ecs_world_t *world,
-    ecs_table_t *table); 
+    ecs_table_t *table,
+    int32_t column_count);
 
 /* Clear all entities from a table. */
 void flecs_table_clear_entities(

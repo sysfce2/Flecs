@@ -1284,7 +1284,7 @@ void flecs_fini_unset_tables(
     ecs_sparse_t *tables = &world->store.tables;
     int32_t i, count = flecs_sparse_count(tables);
 
-    for (i = 0; i < count; i ++) {
+    for (i = 1; i < count; i ++) {
         ecs_table_t *table = flecs_sparse_get_dense_t(tables, ecs_table_t, i);
         flecs_table_remove_actions(world, table);
     }

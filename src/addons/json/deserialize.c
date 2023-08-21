@@ -659,7 +659,7 @@ const char* flecs_json_parse_column(
     ecs_vec_t *records,
     const ecs_from_json_desc_t *desc)
 {
-    if (!table->column_count) {
+    if (!ecs_table_column_count(table)) {
         ecs_parser_error(desc->name, desc->expr, json - desc->expr, 
             "table has no components");
         goto error;

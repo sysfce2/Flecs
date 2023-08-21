@@ -36,7 +36,7 @@ flecs_component_ptr_t flecs_get_component_w_index(
     int32_t column_index,
     int32_t row)
 {
-    ecs_check(column_index < table->column_count, ECS_NOT_A_COMPONENT, NULL);
+    ecs_check(column_index < ecs_table_column_count(table), ECS_NOT_A_COMPONENT, NULL);
     ecs_column_t *column = flecs_table_column(table, column_index);
     return (flecs_component_ptr_t){
         .ti = column->ti,
@@ -819,7 +819,7 @@ const ecs_entity_t* flecs_bulk_new(
             } 
         };
 
-        int32_t j, storage_count = table->column_count;
+        int32_t j, storage_count = ecs_table_column_count(table);
         for (j = 0; j < storage_count; j ++) {
             ecs_type_t set_type = {
                 .array = &flecs_table_column(table, j)->id,
@@ -939,7 +939,7 @@ flecs_component_ptr_t flecs_get_mut(
     flecs_defer_begin(world, &world->stages[0]);
 
     ecs_assert(r->table != NULL, ECS_INTERNAL_ERROR, NULL);
-    ecs_assert(r->table->column_count != 0, ECS_INTERNAL_ERROR, NULL);
+    ecs_assert(ecs_table_column_count(r->table) != 0, ECS_INTERNAL_ERROR, NULL);
     dst = flecs_get_component_ptr(
         world, r->table, ECS_RECORD_TO_ROW(r->row), id);
 error:
@@ -2600,7 +2600,7 @@ ecs_entity_t ecs_clone(
     if (copy_value) {
         flecs_table_move(world, dst, src, src_table,
             row, src_table, ECS_RECORD_TO_ROW(src_r->row), true);
-        int32_t i, count = src_table->column_count;
+        int32_t i, count = ecs_table_column_count(src_table);
         for (i = 0; i < count; i ++) {
             ecs_type_t type = {
                 .array = &flecs_table_column(src_table, i)->id,
