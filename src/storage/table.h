@@ -85,12 +85,6 @@ struct ecs_table_t {
     ecs_table__t *_;                 /* Infrequently accessed table metadata */
 };
 
-/* Init table */
-void flecs_table_init(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_table_t *from);
-
 /* Get table data */
 ecs_data_t* flecs_table_data(
     const ecs_table_t *table);
@@ -120,42 +114,11 @@ ecs_entity_t* flecs_table_entities_array(
 ecs_record_t** flecs_table_records_array(
     const ecs_table_t *table);
 
-/** Copy type. */
-ecs_type_t flecs_type_copy(
-    ecs_world_t *world,
-    const ecs_type_t *src);
-
-/** Free type. */
-void flecs_type_free(
-    ecs_world_t *world,
-    ecs_type_t *type);
-
-/** Find or create table for a set of components */
-ecs_table_t* flecs_table_find_or_create(
-    ecs_world_t *world,
-    ecs_type_t *type);
-
-/* Initialize columns for data */
-void flecs_table_init_data(
+/* Init table */
+void flecs_table_init(
     ecs_world_t *world,
     ecs_table_t *table,
-    int32_t column_count);
-
-/* Clear all entities from a table. */
-void flecs_table_clear_entities(
-    ecs_world_t *world,
-    ecs_table_t *table);
-
-/* Reset a table to its initial state */
-void flecs_table_reset(
-    ecs_world_t *world,
-    ecs_table_t *table);
-
-/* Clear table data. Don't call OnRemove handlers. */
-void flecs_table_clear_data(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_data_t *data);
+    ecs_table_t *from);
 
 /* Add a new entry to the table for the specified entity */
 int32_t flecs_table_append(
@@ -173,10 +136,6 @@ void flecs_table_delete(
     int32_t index,
     bool destruct);
 
-/* Make sure table records are in correct table cache list */
-bool flecs_table_records_update_empty(
-    ecs_table_t *table);
-
 /* Move a row from one table to another */
 void flecs_table_move(
     ecs_world_t *world,
@@ -188,21 +147,31 @@ void flecs_table_move(
     int32_t old_index,
     bool construct);
 
+/* Merge data of one table into another table */
+void flecs_table_merge(
+    ecs_world_t *world,
+    ecs_table_t *new_table,
+    ecs_table_t *old_table);
+
+/* Swap rows in table */
+void flecs_table_swap(
+    ecs_world_t *world,
+    ecs_table_t *table,
+    int32_t row_1,
+    int32_t row_2);
+
 /* Grow table with specified number of records. Populate table with entities,
  * starting from specified entity id. */
 int32_t flecs_table_appendn(
     ecs_world_t *world,
     ecs_table_t *table,
-    ecs_data_t *data,
     int32_t count,
     const ecs_entity_t *ids);
 
-/* Set table to a fixed size. Useful for preallocating memory in advance. */
-void flecs_table_set_size(
+/* Reset a table to its initial state */
+void flecs_table_reset(
     ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_data_t *data,
-    int32_t count);
+    ecs_table_t *table);
 
 /* Shrink table to contents */
 bool flecs_table_shrink(
@@ -218,8 +187,30 @@ int32_t* flecs_table_get_dirty_state(
 void flecs_init_root_table(
     ecs_world_t *world);
 
-/* Unset components in table */
-void flecs_table_remove_actions(
+/* Mark component column dirty */
+void flecs_table_mark_dirty(
+    ecs_world_t *world,
+    ecs_table_t *table,
+    ecs_entity_t component);
+
+/* Keep track of number of traversable entities in table */
+void flecs_table_traversable_add(
+    ecs_table_t *table,
+    int32_t value);
+
+/* Notify table of event (used for propagating observer related flags) */
+void flecs_table_notify(
+    ecs_world_t *world,
+    ecs_table_t *table,
+    ecs_table_event_t *event);
+
+/* Clear entities from a table. */
+void flecs_table_clear_entities(
+    ecs_world_t *world,
+    ecs_table_t *table);
+
+/* Clear entities from a table, delete entities from entity index. */
+void flecs_table_delete_entities(
     ecs_world_t *world,
     ecs_table_t *table);
 
@@ -227,43 +218,5 @@ void flecs_table_remove_actions(
 void flecs_table_free(
     ecs_world_t *world,
     ecs_table_t *table); 
-
-/* Free table */
-void flecs_table_free_type(
-    ecs_world_t *world,
-    ecs_table_t *table);     
-
-/* Merge data of one table into another table */
-void flecs_table_merge(
-    ecs_world_t *world,
-    ecs_table_t *new_table,
-    ecs_table_t *old_table,
-    ecs_data_t *new_data,
-    ecs_data_t *old_data);
-
-void flecs_table_swap(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    int32_t row_1,
-    int32_t row_2);
-
-void flecs_table_mark_dirty(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_entity_t component);
-
-void flecs_table_notify(
-    ecs_world_t *world,
-    ecs_table_t *table,
-    ecs_table_event_t *event);
-
-void flecs_table_delete_entities(
-    ecs_world_t *world,
-    ecs_table_t *table);
-
-/* Increase observer count of table */
-void flecs_table_traversable_add(
-    ecs_table_t *table,
-    int32_t value);
 
 #endif

@@ -664,7 +664,7 @@ void flecs_commit(
     ecs_world_t *world,
     ecs_entity_t entity,
     ecs_record_t *record,
-    ecs_table_t *dst_table,   
+    ecs_table_t *dst_table,
     ecs_table_diff_t *diff,
     bool construct,
     ecs_flags32_t evt_flags)
@@ -766,7 +766,7 @@ const ecs_entity_t* flecs_bulk_new(
     }
 
     ecs_data_t *data = flecs_table_data(table);
-    int32_t row = flecs_table_appendn(world, table, data, count, entities);
+    int32_t row = flecs_table_appendn(world, table, count, entities);
 
     /* Update entity index. */
     int i;
@@ -2260,8 +2260,7 @@ void flecs_remove_from_table(
                 ecs_log_pop_3();
             }
 
-            flecs_table_merge(world, dst_table, table, 
-                flecs_table_data(dst_table), flecs_table_data(table));
+            flecs_table_merge(world, dst_table, table);
         }
     }
 
@@ -3516,7 +3515,7 @@ void flecs_flatten(
             ecs_table_diff_t td;
             flecs_table_diff_build_noalloc(&diff, &td);
             flecs_notify_on_remove(world, table, NULL, 0, count, &td.removed);
-            flecs_table_merge(world, dst, table, dst->data, table->data);
+            flecs_table_merge(world, dst, table);
             flecs_notify_on_add(world, dst, NULL, dst_count, count,
                 &td.added, 0);
             flecs_table_diff_builder_fini(world, &diff);

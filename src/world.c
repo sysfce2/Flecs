@@ -576,14 +576,6 @@ void flecs_clean_tables(
         flecs_table_free(world, t);
     }
 
-    /* Free table types separately so that if application destructors rely on
-     * a type it's still valid. */
-    for (i = 1; i < count; i ++) {
-        ecs_table_t *t = flecs_sparse_get_dense_t(&world->store.tables, 
-            ecs_table_t, i);
-        flecs_table_free_type(world, t);
-    }
-
     /* Clear the root table */
     if (count) {
         flecs_table_reset(world, &world->store.root);
@@ -1286,7 +1278,10 @@ void flecs_fini_unset_tables(
 
     for (i = 1; i < count; i ++) {
         ecs_table_t *table = flecs_sparse_get_dense_t(tables, ecs_table_t, i);
-        flecs_table_remove_actions(world, table);
+        int32_t count = ecs_table_count(table);
+        if (count) {
+            flecs_notify_on_remove(world, table, NULL, 0, count, &table->type);
+        }
     }
 }
 
@@ -1923,6 +1918,23 @@ void flecs_process_empty_queries(
     }
 
     flecs_defer_end(world, &world->stages[0]);
+}
+
+static
+bool flecs_table_records_update_empty(
+    ecs_table_t *table)
+{
+    bool result = false;
+    bool is_empty = ecs_table_count(table) == 0;
+
+    int32_t i, count = table->_->record_count;
+    for (i = 0; i < count; i ++) {
+        ecs_table_record_t *tr = &table->_->records[i];
+        ecs_table_cache_t *cache = tr->hdr.cache;
+        result |= ecs_table_cache_set_empty(cache, table, is_empty);
+    }
+
+    return result;
 }
 
 /** Walk over tables that had a state change which requires bookkeeping */
