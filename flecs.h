@@ -3116,7 +3116,7 @@ extern "C" {
 typedef struct ecs_stage_t ecs_stage_t;
 
 /** Table data */
-typedef struct ecs_data_t ecs_data_t;
+typedef struct ecs_table_data_t ecs_table_data_t;
 
 /* Switch list */
 typedef struct ecs_switch_t ecs_switch_t;

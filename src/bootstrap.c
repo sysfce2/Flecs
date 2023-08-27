@@ -541,7 +541,7 @@ ecs_table_t* flecs_bootstrap_component_table(
     };
 
     ecs_table_t *result = flecs_table_find_or_create(world, &array);
-    ecs_data_t *data = flecs_table_data(result);
+    ecs_table_data_t *data = flecs_table_data(result);
 
     /* Preallocate enough memory for initial components */
     ecs_allocator_t *a = &world->allocator;

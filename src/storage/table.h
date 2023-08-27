@@ -7,6 +7,7 @@
 #define FLECS_TABLE_H
 
 #include "table_graph.h"
+#include "table_data.h"
 
 /* Table event type for notifying tables of world events */
 typedef enum ecs_table_eventkind_t {
@@ -36,6 +37,8 @@ typedef struct ecs_table__t {
     uint64_t hash;                   /* Type hash */
     int32_t lock;                    /* Prevents modifications */
     int32_t traversable_count;       /* Traversable relationship targets in table */
+    int16_t bs_offset;               /* First bitset id in type */
+    int16_t ft_offset;               /* First flattened id in type */
     uint16_t generation;             /* Used for table cleanup */
     int16_t record_count;            /* Table record count including wildcards */
     
@@ -43,26 +46,31 @@ typedef struct ecs_table__t {
     ecs_hashmap_t *name_index;       /* Cached pointer to name index */
 } ecs_table__t;
 
-/** Table column */
+/** Component column */
 typedef struct ecs_column_t {
     ecs_vec_t data;                  /* Vector with component data */
-    ecs_id_t id;                     /* Component id */
+    ecs_id_t id;                     /* Column id */
     ecs_type_info_t *ti;             /* Component type info */
     ecs_size_t size;                 /* Component size */
 } ecs_column_t;
 
+/** Bitset column */
+typedef struct ecs_bitset_column_t {
+    ecs_bitset_t data;               /* Bitset columns */
+    ecs_id_t id;                     /* Column id */
+} ecs_bitset_column_t;
+
 /** Table data */
-struct ecs_data_t {
+struct ecs_table_data_t {
     ecs_vec_t entities;              /* Entity ids */
     ecs_vec_t records;               /* Ptrs to records in entity index */
     ecs_column_t *columns;           /* Component data */
     int16_t column_count;            /* Number of components (excluding tags) */
+    ecs_flags32_t flags;             /* Flags for testing table data properties */
     int32_t *dirty_state;            /* Keep track of changes in columns */
 
-    ecs_bitset_t *bs_columns;        /* Bitset columns */
-    int16_t bs_count;
-    int16_t bs_offset;
-    int16_t ft_offset;
+    ecs_bitset_column_t *bitsets;    /* Bitset columns */    
+    int16_t bs_count;                /* Number of bitset columns */
 };
 
 /** A table is the Flecs equivalent of an archetype. Tables store all entities
@@ -74,7 +82,7 @@ struct ecs_table_t {
     ecs_flags32_t flags;             /* Flags for testing table properties */
     ecs_type_t type;                 /* Vector with component ids */
 
-    ecs_data_t *data;                /* Component storage */
+    ecs_table_data_t *data;                /* Component storage */
     ecs_graph_node_t node;           /* Graph node */
     
     int32_t *column_map;             /* Map type index <-> column
@@ -86,7 +94,7 @@ struct ecs_table_t {
 };
 
 /* Get table data */
-ecs_data_t* flecs_table_data(
+ecs_table_data_t* flecs_table_data(
     const ecs_table_t *table);
 
 /* Get table columns */

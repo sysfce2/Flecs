@@ -260,7 +260,7 @@ void flecs_instantiate_children(
     }
 
     ecs_type_t type = child_table->type;
-    ecs_data_t *child_data = flecs_table_data(child_table);
+    ecs_table_data_t *child_data = flecs_table_data(child_table);
 
     ecs_entity_t slot_of = 0;
     ecs_entity_t *ids = type.array;
@@ -765,7 +765,7 @@ const ecs_entity_t* flecs_bulk_new(
         component_array.count = type.count;
     }
 
-    ecs_data_t *data = flecs_table_data(table);
+    ecs_table_data_t *data = flecs_table_data(table);
     int32_t row = flecs_table_appendn(world, table, count, entities);
 
     /* Update entity index. */
@@ -988,7 +988,7 @@ void flecs_notify_on_set(
     bool owned)
 {
     ecs_assert(ids != NULL, ECS_INTERNAL_ERROR, NULL);
-    ecs_data_t *data = flecs_table_data(table);
+    ecs_table_data_t *data = flecs_table_data(table);
 
     ecs_entity_t *entities = &flecs_table_entities_array(table)[row];
     ecs_assert(entities != NULL, ECS_INTERNAL_ERROR, NULL);
@@ -3149,11 +3149,11 @@ void ecs_enable_id(
     }
     
     ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-    index -= flecs_table_data(table)->bs_offset;
+    index -= table->_->bs_offset;
     ecs_assert(index >= 0, ECS_INTERNAL_ERROR, NULL);
 
     /* Data cannot be NULl, since entity is stored in the table */
-    ecs_bitset_t *bs = &flecs_table_data(table)->bs_columns[index];
+    ecs_bitset_t *bs = &flecs_table_data(table)->bitsets[index].data;
     ecs_assert(bs != NULL, ECS_INTERNAL_ERROR, NULL);
 
     flecs_bitset_set(bs, ECS_RECORD_TO_ROW(r->row), enable);
@@ -3189,9 +3189,9 @@ bool ecs_is_enabled_id(
     }
 
     ecs_assert(table->_ != NULL, ECS_INTERNAL_ERROR, NULL);
-    index -= flecs_table_data(table)->bs_offset;
+    index -= table->_->bs_offset;
     ecs_assert(index >= 0, ECS_INTERNAL_ERROR, NULL);
-    ecs_bitset_t *bs = &flecs_table_data(table)->bs_columns[index];
+    ecs_bitset_t *bs = &flecs_table_data(table)->bitsets[index].data;
 
     return flecs_bitset_get(bs, ECS_RECORD_TO_ROW(r->row));
 error:

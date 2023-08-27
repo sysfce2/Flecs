@@ -1056,7 +1056,7 @@ void flecs_emit(
     const ecs_event_record_t *er_onset = flecs_event_record_get_if(observable, EcsOnSet);
     const ecs_event_record_t *er_unset = flecs_event_record_get_if(observable, EcsUnSet);
 
-    ecs_data_t *storage = NULL;
+    ecs_table_data_t *storage = NULL;
     ecs_column_t *columns = NULL;
     if (count) {
         storage = table->data;
